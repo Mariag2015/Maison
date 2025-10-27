@@ -1,0 +1,24 @@
+// Brochage
+const int pinCapteur = 2;    // capteur magnétique sur la broche D2
+const int pinAlarme  = 13;   // buzzer ou LED sur la broche D13
+
+void setup() {
+  pinMode(pinCapteur, INPUT_PULLUP); // le capteur est en mode entrée avec résistance interne
+  pinMode(pinAlarme, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop() {
+  int etatFenetre = digitalRead(pinCapteur);
+
+  // Si la fenêtre est ouverte
+  if (etatFenetre == HIGH) {
+    digitalWrite(pinAlarme, HIGH);  // allume l’alarme
+    Serial.println("⚠️ Fenêtre ouverte ! Alarme activée.");
+  } else {
+    digitalWrite(pinAlarme, LOW);   // éteint l’alarme
+    Serial.println("✅ Fenêtre fermée, tout va bien.");
+  }
+
+  delay(500);
+}
