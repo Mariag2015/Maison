@@ -35,7 +35,7 @@ int dernierEtat3 = HIGH;  // État précédent pour capteur 3 (Porte)
 // -------------------------
 // ⚙️ FONCTIONS
 // -------------------------
-void setup_wifi() {
+void setup_wifi() { // TROP COOL LE CODE
   delay(10);
   Serial.println();
   Serial.print("Connexion au WiFi ");
