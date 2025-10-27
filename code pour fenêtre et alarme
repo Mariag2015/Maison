@@ -87,10 +87,10 @@ void loop() {
   // Détection de changement d’état (ouverture = HIGH)
   if (etatCapteur != dernierEtat) {
     if (etatCapteur == HIGH) {
-      Serial.println("🚨 Intrusion détectée !");
+      Serial.println("🚨 Alerte au voleur !");
       client.publish(topic_alarme, "Intrusion!");
     } else {
-      Serial.println("🔒 Fenêtre refermée");
+      Serial.println("🔒 Fenêtre fermer   ");
     }
     dernierEtat = etatCapteur;
   }
