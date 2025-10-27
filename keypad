@@ -76,7 +76,7 @@ void setup() {
 
   // Connect Adafruit IO
 
-  Serial.print("Connexion à Adafruit IO...");
+  Serial.print("Connexion à Adafruit IO..."); //le esp32 tente de ce connecter au adafruit
 
   io.connect();
 
