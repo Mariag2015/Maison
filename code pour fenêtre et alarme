@@ -1,23 +1,32 @@
-// Brochage
-const int pinCapteur = 2;    // capteur magnétique sur la broche D2
-const int pinAlarme  = 13;   // buzzer ou LED sur la broche D13
+// --- Brochage ---
+const int capteur1 = 2;   // Capteur de la première fenêtre (D2)
+const int capteur2 = 3;   // Capteur de la deuxième fenêtre (D3)
+const int pinAlarme = 13; // Buzzer ou LED d'alarme (D13)
 
 void setup() {
-  pinMode(pinCapteur, INPUT_PULLUP); // le capteur est en mode entrée avec résistance interne
+  pinMode(capteur1, INPUT_PULLUP);  // Capteurs en entrée avec résistance interne
+  pinMode(capteur2, INPUT_PULLUP);
   pinMode(pinAlarme, OUTPUT);
   Serial.begin(9600);
+  Serial.println("Système d'alarme prêt ✅");
 }
 
 void loop() {
-  int etatFenetre = digitalRead(pinCapteur);
+  // Lecture des capteurs
+  int etat1 = digitalRead(capteur1);
+  int etat2 = digitalRead(capteur2);
 
-  // Si la fenêtre est ouverte
-  if (etatFenetre == HIGH) {
-    digitalWrite(pinAlarme, HIGH);  // allume l’alarme
+  // Si une des fenêtres est ouverte
+  if (etat1 == HIGH || etat2 == HIGH) {
+    digitalWrite(pinAlarme, HIGH);  // Allume le buzzer ou LED
     Serial.println("⚠️ Fenêtre ouverte ! Alarme activée.");
-  } else {
-    digitalWrite(pinAlarme, LOW);   // éteint l’alarme
-    Serial.println("✅ Fenêtre fermée, tout va bien.");
+    
+    if (etat1 == HIGH) Serial.println("👉 Fenêtre 1 ouverte !");
+    if (etat2 == HIGH) Serial.println("👉 Fenêtre 2 ouverte !");
+  } 
+  else {
+    digitalWrite(pinAlarme, LOW);   // Éteint l’alarme
+    Serial.println("✅ Toutes les fenêtres sont fermées.");
   }
 
   delay(500);
