@@ -1,0 +1,88 @@
+const BleUuid serviceUuid("19B10010-E8F2-537E-4F6C-D104768A1214");
+const BleUuid ledUuid("6E400002-B5A3-F393-E0A9-E50E24DCCA9E");
+const BleUuid buttonUuid("6E400003-B5A3-F393-E0A9-E50E24DCCA9E");
+const BleUuid TARGET_SERVICE_UUID = 0x180D;
+ 
+const uint8_t BUTTON_PIN = D6;                     
+const uint8_t LED_PIN = D7;      
+ 
+BleAddress targetAddress;
+BlePeerDevice peripheral;
+BleCharacteristic notifyCharacteristic;
+BleCharacteristic writeCharacteristic;
+bool isFound = false;
+int valeurBoutonPrecedente = 0;
+void onDataReceived(const uint8_t* data, size_t len, const BlePeerDevice& peer, void* context) {
+    //Allumer la LED si le chiffre 1 ou le charactère 1
+    if(data[0]==1 || data[0]=='1'){
+        digitalWrite(LED_PIN, HIGH);      
+    } 
+    //Éteindre la LED si le chiffre 2 ou le charactère 2
+    else if(data[0]==0 || data[0]=='0'){
+        digitalWrite(LED_PIN, LOW);      
+    }
+}
+ 
+void setup() {
+    Serial.begin(9600);
+    //Init bouton et led
+    pinMode(LED_PIN, OUTPUT);               
+    pinMode(BUTTON_PIN, INPUT_PULLDOWN);    
+ 
+    //Init BLE
+	BLE.on();    
+}
+ 
+void loop() {
+  // Particle OS requires this to keep the cloud and BLE stack running smoothly
+  Particle.process(); 
+  // Handle a disconnected device
+  if (!peripheral.connected() && !isFound) {
+    BLE.scan(scanResultCallback); 
+  } else if (isFound) {
+    isFound = false;
+    Serial.print("Attempting to connect to ");
+    Serial.println(targetAddress.toString().c_str());
+    peripheral = BLE.connect(targetAddress);
+    if (peripheral.connected()) {
+      Serial.print("Connection successful! Discovering services...");
+      peripheral.discoverAllServices();
+      // Écrire le statut de notre bouton dans la LED du peripheral, ie si le bouton est pes/, allumer la DEL
+      peripheral.getCharacteristicByUUID(writeCharacteristic, ledUuid);
+      // Subscribe pour recevoir du peripheral dans la fonction onDataReceived
+      peripheral.getCharacteristicByUUID(notifyCharacteristic, buttonUuid);
+      notifyCharacteristic.onDataReceived(onDataReceived, NULL);
+    }
+  }
+  //Si bouton changé, envoyer
+  if(peripheral.connected()){
+      int valeurBouton = digitalRead(BUTTON_PIN);
+      if(valeurBoutonPrecedente != valeurBouton){
+        Serial.print("Writing ");
+        Serial.write(valeurBouton);
+        Serial.println(" ");
+        valeurBoutonPrecedente = valeurBouton;
+        writeCharacteristic.setValue(valeurBouton);
+      }
+  }
+}
+ 
+// The callback function that handles each discovered device
+void scanResultCallback(const BleScanResult* scanResult, void* context) {
+ 
+  String name = scanResult->advertisingData().deviceName();
+  if(name.length()==0){
+    name = scanResult->scanResponse().deviceName();
+  }
+  Serial.print("Found device: ");
+  Serial.println(name);
+  if (name=="boutton") {
+    isFound = true;
+    Serial.print("Target peripheral found. Stopping scan.");
+    // Stop the scan
+    BLE.stopScanning(); 
+    // Save the address and trigger the connection
+    targetAddress = scanResult->address();
+    // Since we're in the callback, we can't connect directly.  We set a flag or variable and handle the connection in `loop()`.
+  }
+}
